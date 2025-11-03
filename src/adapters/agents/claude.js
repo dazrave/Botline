@@ -1,6 +1,7 @@
 import axios from 'axios';
 import logger from '../../core/logger.js';
 import config from '../../config/index.js';
+import creditTimerKeeper, { KEEPALIVE_MESSAGE } from '../../core/scheduler.js';
 
 /**
  * Claude AI Agent Adapter
@@ -23,7 +24,15 @@ class ClaudeAdapter {
         throw new Error('Claude API key not configured');
       }
 
-      logger.debug('Sending message to Claude:', { message, model: this.model });
+      // Check if this is a keepalive message
+      const isKeepalive = message === KEEPALIVE_MESSAGE;
+
+      if (!isKeepalive) {
+        // Pause timer keeper when real message is sent
+        creditTimerKeeper.pauseAfterRealMessage();
+      }
+
+      logger.debug('Sending message to Claude:', { message, model: this.model, isKeepalive });
 
       const response = await axios.post(
         this.apiUrl,

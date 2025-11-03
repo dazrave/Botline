@@ -6,6 +6,7 @@ import messageBus from './core/messageBus.js';
 import agentRegistry from './core/agentRegistry.js';
 import agentCommunicator from './core/agentCommunicator.js';
 import middleware from './core/middleware.js';
+import creditTimerKeeper from './core/scheduler.js';
 
 // Import adapters
 import ClaudeAdapter from './adapters/agents/claude.js';
@@ -302,6 +303,11 @@ class Botline {
       if (claude.isConfigured()) {
         this.agentAdapters.claude = claude;
         messageRouter.registerAgent('claude', claude);
+        
+        // Start Credit Timer Keeper for Claude
+        creditTimerKeeper.start(async (message) => {
+          await claude.sendMessage(message);
+        });
       }
     }
 
@@ -376,6 +382,9 @@ class Botline {
    */
   async shutdown() {
     logger.info('Shutting down Botline...');
+
+    // Stop Credit Timer Keeper
+    creditTimerKeeper.stop();
 
     // Stop Telegram polling if active
     if (this.platformAdapters.telegram) {

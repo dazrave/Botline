@@ -1,6 +1,7 @@
 import logger from './logger.js';
 import agentRegistry from './agentRegistry.js';
 import messageBus from './messageBus.js';
+import creditTimerKeeper from './scheduler.js';
 
 /**
  * CommandHandler - Handles chat commands like /start, /status, /help
@@ -20,6 +21,7 @@ class CommandHandler {
     this.register('start', this.startCommand.bind(this));
     this.register('agents', this.agentsCommand.bind(this));
     this.register('buffer', this.bufferCommand.bind(this));
+    this.register('timer', this.timerCommand.bind(this));
   }
 
   /**
@@ -71,6 +73,7 @@ class CommandHandler {
 • \`/agents\` - List registered CLI agents
 • \`/start <agent> <task>\` - Start an agent job
 • \`/buffer\` - Show recent messages
+• \`/timer <on|off|status>\` - Control Credit Timer Keeper
 
 **Direct Messages:**
 Any message that doesn't start with \`/\` will be forwarded to the default AI agent.
@@ -79,6 +82,7 @@ Any message that doesn't start with \`/\` will be forwarded to the default AI ag
 \`/status\` - Check system status
 \`/agents\` - See all registered agents
 \`/start claude-cli "review recent commits"\` - Start a task
+\`/timer status\` - Check Credit Timer Keeper status
 \`What is the weather?\` - Ask the AI directly`;
 
     return { text: helpText };
@@ -201,6 +205,59 @@ ${messages.map((m, i) => {
 }).join('\n')}`;
 
     return { text: bufferText };
+  }
+
+  /**
+   * /timer command - control Credit Timer Keeper
+   */
+  async timerCommand(args, context) {
+    if (args.length === 0) {
+      return { 
+        text: '**Usage:** `/timer <on|off|status>`\n\n**Examples:**\n• `/timer on` - Enable Credit Timer Keeper\n• `/timer off` - Disable Credit Timer Keeper\n• `/timer status` - Show timer status' 
+      };
+    }
+
+    const action = args[0].toLowerCase();
+
+    switch (action) {
+      case 'on':
+      case 'enable':
+        creditTimerKeeper.enable();
+        return { 
+          text: '**Credit Timer Keeper Enabled**\n\nHourly heartbeat messages will be sent to Claude to maintain credit replenishment cycle.' 
+        };
+
+      case 'off':
+      case 'disable':
+        creditTimerKeeper.disable();
+        return { 
+          text: '**Credit Timer Keeper Disabled**\n\nHeartbeat messages have been stopped.' 
+        };
+
+      case 'status':
+        const status = creditTimerKeeper.getStatus();
+        const nextHeartbeatText = status.nextHeartbeat 
+          ? new Date(status.nextHeartbeat).toLocaleString() 
+          : 'Not scheduled';
+
+        const statusText = `**Credit Timer Keeper Status**
+
+• **Enabled:** ${status.enabled ? '✅ Yes' : '❌ No'}
+• **Running:** ${status.running ? '✅ Yes' : '❌ No'}
+• **Paused:** ${status.paused ? '⏸️ Yes (after real message)' : '▶️ No'}
+• **Next Heartbeat:** ${nextHeartbeatText}
+• **Interval:** ${status.interval} minutes
+• **Cooldown:** ${status.cooldown} minutes
+
+The Credit Timer Keeper sends periodic "hello world (keepalive)" messages to Claude to maintain the credit replenishment cycle. It automatically pauses when you send a real message.`;
+
+        return { text: statusText };
+
+      default:
+        return { 
+          text: `**Unknown action:** ${action}\n\nUse \`/timer on\`, \`/timer off\`, or \`/timer status\`` 
+        };
+    }
   }
 }
 

@@ -39,6 +39,11 @@ export const config = {
   logging: {
     level: process.env.LOG_LEVEL || 'info',
   },
+  creditKeeper: {
+    enabled: process.env.CREDIT_KEEPER_ENABLED === 'true',
+    interval: parseFloat(process.env.CREDIT_KEEPER_INTERVAL || '60'),
+    cooldown: parseFloat(process.env.CREDIT_KEEPER_COOLDOWN || '120'),
+  },
 };
 
 export default config;
