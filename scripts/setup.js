@@ -178,7 +178,7 @@ async function setup() {
 
   const configureOpenRouter = await prompt('Configure OpenRouter? (y/n)', existingConfig.OPENROUTER_API_KEY ? 'y' : 'n');
   
-  if (configurOpenRouter.toLowerCase() === 'y') {
+  if (configureOpenRouter.toLowerCase() === 'y') {
     config.OPENROUTER_API_KEY = await prompt('OpenRouter API Key', existingConfig.OPENROUTER_API_KEY || '');
     config.OPENROUTER_MODEL = await prompt('OpenRouter Model', existingConfig.OPENROUTER_MODEL || 'anthropic/claude-3.5-sonnet');
   } else {
