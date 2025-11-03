@@ -142,6 +142,26 @@ class TelegramAdapter {
       logger.info('Telegram bot stopped');
     }
   }
+
+  /**
+   * Broadcast a message (for agent notifications)
+   */
+  async broadcastMessage(message) {
+    try {
+      // For now, we'll log that broadcast is not implemented
+      // In a real implementation, you might maintain a list of subscribed users
+      logger.info('Telegram broadcast not implemented - would send:', message);
+      
+      // Example implementation:
+      // if (this.subscribedUsers) {
+      //   for (const userId of this.subscribedUsers) {
+      //     await this.bot.sendMessage(userId, message, { parse_mode: 'Markdown' });
+      //   }
+      // }
+    } catch (error) {
+      logger.error('Error broadcasting message to Telegram:', error);
+    }
+  }
 }
 
 export default TelegramAdapter;

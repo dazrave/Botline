@@ -6,26 +6,34 @@ Botline is your direct hotline to chaos, charm, and cleverness. It connects Slac
 
 - 🔌 **Multi-Platform Support**: Connect via Slack (Socket Mode) or Telegram (Bot API)
 - 🤖 **Multiple AI Agents**: Support for Claude (Anthropic) and OpenRouter (multiple models)
+- 🛠️ **CLI Agent Communication**: Bidirectional communication with CLI-based agents (Claude CLI, Opencode, etc.)
 - 🔄 **Real-time Message Relay**: Seamless bidirectional communication between chat platforms and AI
 - 🏗️ **Modular Architecture**: Easy to extend with new platforms or AI agents
 - 📝 **Comprehensive Logging**: Built-in logging system for debugging and monitoring
-- 🚀 **Easy Setup**: Simple configuration via environment variables
+- 🔒 **Security**: IP whitelisting, shared secrets, and access control
+- 💬 **Chat Commands**: Built-in commands for agent management (/help, /status, /agents, /start)
+- 📊 **Status Monitoring**: Real-time status endpoints with agent information
+- 🔁 **Auto-Retry**: Reliable message delivery with exponential backoff
+- 🚀 **Easy Setup**: Interactive setup wizard via `npm run setup`
 
 ## Architecture
 
-Botline uses a modular adapter pattern:
+Botline uses a modular adapter pattern with an event-driven message bus:
 
 ```
-Chat Platform (Slack/Telegram) → Platform Adapter → Message Router → Agent Adapter → AI Service (Claude/OpenRouter)
-                                                                                            ↓
-                                  Response ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+Chat Platform (Slack/Telegram) → Platform Adapter → Message Bus → Router → AI Agent
+                                         ↓                               ↓
+CLI Agent Bridge ← ← ← ← ← ← ← ← ← Agent Registry ← ← ← ← ← ← ← Response
 ```
 
 ### Components
 
 - **Platform Adapters**: Handle communication with chat platforms (Slack, Telegram)
 - **Agent Adapters**: Handle communication with AI services (Claude, OpenRouter)
+- **Message Bus**: EventEmitter-based system with middleware support
+- **Agent Registry**: Manages CLI agents and their callback URLs
 - **Message Router**: Routes messages between platforms and agents
+- **Command Handler**: Processes chat commands (/help, /status, etc.)
 - **Configuration Manager**: Centralized configuration from environment variables
 - **Logger**: Structured logging with configurable levels
 
@@ -51,6 +59,11 @@ npm install
 ```
 
 3. Configure environment variables:
+```bash
+npm run setup
+```
+
+Or manually:
 ```bash
 cp .env.example .env
 ```
@@ -137,11 +150,49 @@ npm start
 
 The bot will forward your message to the configured AI agent and relay the response back to you.
 
+### CLI Agent Communication
+
+Botline can also communicate with CLI-based agents like Claude CLI, Opencode, and custom automation tools.
+
+#### Quick Start with CLI Agents
+
+1. **Start a CLI Bridge:**
+```bash
+cd bridges
+BOTLINE_URL=http://localhost:3000 \
+BRIDGE_PORT=4040 \
+node cli-bridge.js my-agent echo "Hello"
+```
+
+2. **Register the Agent:**
+```bash
+curl -X POST http://localhost:3000/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-agent",
+    "callbackUrl": "http://127.0.0.1:4040/reply",
+    "description": "My CLI agent"
+  }'
+```
+
+3. **Use Chat Commands:**
+```
+/agents - List all registered agents
+/status - Show system status
+/start my-agent "do something" - Start an agent task
+/help - Show all commands
+```
+
+For detailed information, see [CLI Agent Communication Guide](CLI_AGENTS.md).
+
 ## API Endpoints
 
-- `GET /health`: Health check endpoint that returns the status and configured platforms/agents
+### Monitoring
 
-Example response:
+- `GET /health`: Health check endpoint that returns the status and configured platforms/agents
+- `GET /status`: Detailed status including uptime, agent information, and message buffer stats
+
+Example `/health` response:
 ```json
 {
   "status": "ok",
@@ -149,6 +200,38 @@ Example response:
   "agents": ["claude", "openrouter"]
 }
 ```
+
+Example `/status` response:
+```json
+{
+  "status": "ok",
+  "uptime": 3600,
+  "platforms": ["slack"],
+  "aiAgents": ["claude"],
+  "cliAgents": {
+    "total": 2,
+    "active": 2,
+    "list": [...]
+  },
+  "messageBuffer": {
+    "size": 15,
+    "maxSize": 100
+  },
+  "memory": {
+    "heapUsed": 45,
+    "heapTotal": 64
+  }
+}
+```
+
+### Agent Management
+
+- `POST /agents/register`: Register a new CLI agent
+- `GET /agents`: List all registered agents
+- `POST /notify`: Agents send notifications to users
+- `POST /reply`: Send replies to agents
+
+See [CLI Agent Communication Guide](CLI_AGENTS.md) for complete API documentation.
 
 ## Project Structure
 
@@ -166,12 +249,25 @@ Botline/
 │   │   └── index.js         # Configuration management
 │   ├── core/
 │   │   ├── logger.js        # Logging utility
-│   │   └── router.js        # Message routing
+│   │   ├── router.js        # Message routing
+│   │   ├── messageBus.js    # EventEmitter-based message bus
+│   │   ├── agentRegistry.js # CLI agent registry
+│   │   ├── agentCommunicator.js # Agent communication with retry logic
+│   │   ├── commandHandler.js # Chat command processor
+│   │   └── middleware.js    # Middleware functions
 │   └── index.js             # Main application
+├── bridges/
+│   ├── cli-bridge.js        # CLI agent bridge example
+│   └── README.md            # Bridge documentation
+├── scripts/
+│   └── setup.js             # Interactive setup wizard
 ├── .env.example             # Example environment variables
 ├── .gitignore
 ├── package.json
-└── README.md
+├── README.md                # This file
+├── CLI_AGENTS.md            # CLI agent communication guide
+├── ARCHITECTURE.md          # Architecture documentation
+└── QUICKSTART.md            # Quick start guide
 ```
 
 ## Extending Botline

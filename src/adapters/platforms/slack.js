@@ -159,6 +159,33 @@ class SlackAdapter {
   isConfigured() {
     return config.slack.enabled;
   }
+
+  /**
+   * Broadcast a message to all channels (for agent notifications)
+   */
+  async broadcastMessage(message) {
+    try {
+      // For now, we'll send to a default channel or DM to specific users
+      // This can be customized based on your needs
+      logger.info('Slack broadcast not implemented - would send:', message);
+      
+      // In a real implementation, you might:
+      // 1. Send to a specific channel configured for agent notifications
+      // 2. Send DMs to specific users
+      // 3. Use a broadcast channel pattern
+      
+      // Example: send to a configured channel
+      // const channel = config.slack.notificationChannel;
+      // if (channel) {
+      //   await this.webClient.chat.postMessage({
+      //     channel,
+      //     text: message,
+      //   });
+      // }
+    } catch (error) {
+      logger.error('Error broadcasting message to Slack:', error);
+    }
+  }
 }
 
 export default SlackAdapter;
