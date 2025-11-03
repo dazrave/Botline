@@ -30,11 +30,6 @@ class SlackAdapter {
         appToken: config.slack.appToken,
       });
 
-      this.webClient = new WebClient(config.slack.botToken);
-      this.socketClient = new SocketModeClient({
-        appToken: config.slack.appToken,
-      });
-
       // Get bot user ID
       const authResult = await this.webClient.auth.test();
       this.botUserId = authResult.user_id;
