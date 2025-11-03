@@ -1,4 +1,6 @@
 import logger from './logger.js';
+import messageBus from './messageBus.js';
+import commandHandler from './commandHandler.js';
 
 /**
  * MessageRouter handles routing messages between platforms and AI agents
@@ -44,6 +46,25 @@ class MessageRouter {
     try {
       logger.debug(`Routing message from ${platformName}:`, message);
 
+      // Publish to message bus (will run through middleware)
+      await messageBus.publish('message:incoming', message, {
+        ...context,
+        platform: platformName,
+      });
+
+      // Check if this is a command
+      if (context.isCommand && commandHandler.hasCommand(context.command)) {
+        const response = await commandHandler.execute(context.command, context.args, context);
+        
+        // Send command response back to platform
+        const platform = this.platformAdapters.get(platformName);
+        if (platform && platform.sendMessage) {
+          await platform.sendMessage(response, context);
+        }
+
+        return response;
+      }
+
       // Get the agent to use (default or specified in context)
       const agentName = context.agent || this.defaultAgent;
       
@@ -59,6 +80,12 @@ class MessageRouter {
       // Send message to AI agent
       logger.info(`Sending message to ${agentName} agent`);
       const response = await agent.sendMessage(message, context);
+
+      // Publish response to message bus
+      await messageBus.publish('message:outgoing', response.text, {
+        ...context,
+        agent: agentName,
+      });
 
       // Send response back to platform
       const platform = this.platformAdapters.get(platformName);
