@@ -19,11 +19,10 @@
 
 import express from 'express';
 import { spawn } from 'child_process';
-import fetch from 'node-fetch';
 
 // Configuration
 const BOTLINE_URL = process.env.BOTLINE_URL || 'http://localhost:3000';
-const BRIDGE_PORT = process.env.BRIDGE_PORT || 4040;
+const BRIDGE_PORT = parseInt(process.env.BRIDGE_PORT || '4040', 10);
 const AGENT_SECRET = process.env.AGENT_SECRET || null;
 
 // Parse command line arguments

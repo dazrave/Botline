@@ -117,7 +117,7 @@ class Botline {
     this.app.post('/notify', async (req, res) => {
       try {
         const { from, message } = req.body;
-        const ip = req.ip || req.connection.remoteAddress;
+        const ip = req.ip || req.socket?.remoteAddress || '127.0.0.1';
 
         if (!from || !message) {
           return res.status(400).json({ 

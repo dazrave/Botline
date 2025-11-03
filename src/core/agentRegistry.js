@@ -217,9 +217,16 @@ class AgentRegistry {
       return true;
     }
 
-    // Check if IP matches (support for localhost variations)
-    const normalizedIP = ip === '::1' || ip === '::ffff:127.0.0.1' ? '127.0.0.1' : ip;
-    return agent.allowedIPs.includes(normalizedIP);
+    // Normalize IP address (handle IPv6 localhost variants and mapped addresses)
+    let normalizedIP = ip;
+    if (ip === '::1' || ip === '::ffff:127.0.0.1' || ip.startsWith('::ffff:')) {
+      normalizedIP = ip.replace('::ffff:', '');
+      if (normalizedIP === '::1') {
+        normalizedIP = '127.0.0.1';
+      }
+    }
+
+    return agent.allowedIPs.includes(normalizedIP) || agent.allowedIPs.includes(ip);
   }
 }
 

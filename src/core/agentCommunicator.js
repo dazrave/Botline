@@ -62,10 +62,10 @@ class AgentCommunicator {
       timestamp: new Date().toISOString(),
     };
 
-    // Add secret header if available
+    // Add secret header if available (use lowercase for consistency)
     const headers = {};
     if (context.secret) {
-      headers['X-Agent-Secret'] = context.secret;
+      headers['x-agent-secret'] = context.secret;
     }
 
     return await this.sendToAgent(agentUrl, payload, { headers });

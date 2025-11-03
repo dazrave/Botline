@@ -66,6 +66,17 @@ export async function userFilterMiddleware(message, context, next) {
 const rateLimits = new Map();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_MESSAGES_PER_WINDOW = 30;
+const CLEANUP_INTERVAL = 300000; // 5 minutes
+
+// Periodic cleanup of expired rate limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, limit] of rateLimits.entries()) {
+    if (now > limit.resetAt + RATE_LIMIT_WINDOW) {
+      rateLimits.delete(key);
+    }
+  }
+}, CLEANUP_INTERVAL);
 
 export async function rateLimitMiddleware(message, context, next) {
   const key = context.user || context.from || context.ip || 'unknown';

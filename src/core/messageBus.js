@@ -44,7 +44,8 @@ class MessageBus extends EventEmitter {
   async publish(event, message, context = {}) {
     try {
       // Add to buffer
-      this.addToBuffer({ event, message, context, timestamp: new Date() });
+      const messagePreview = typeof message === 'string' ? message : JSON.stringify(message);
+      this.addToBuffer({ event, message: messagePreview, context, timestamp: new Date() });
 
       // Execute middleware
       await this.executeMiddleware(message, context);
@@ -52,7 +53,9 @@ class MessageBus extends EventEmitter {
       // Emit event
       this.emit(event, message, context);
 
-      logger.debug(`Message published: ${event}`, { message: message.substring(0, 50) });
+      logger.debug(`Message published: ${event}`, { 
+        message: messagePreview.substring(0, 50) 
+      });
     } catch (error) {
       logger.error(`Error publishing message to event ${event}:`, error);
       this.emit('error', error, { event, message, context });
