@@ -9,9 +9,17 @@
     "dev": "node --watch src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["slack", "telegram", "ai", "claude", "chatbot", "relay", "bot"],
-  "author": "",
+  "keywords": ["slack", "telegram", "ai", "claude", "chatbot", "relay", "bot", "anthropic", "openrouter", "gpt", "llm", "message-relay"],
+  "author": "dazrave",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dazrave/Botline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dazrave/Botline/issues"
+  },
+  "homepage": "https://github.com/dazrave/Botline#readme",
   "dependencies": {
     "@slack/socket-mode": "^2.0.5",
     "@slack/web-api": "^7.12.0",
