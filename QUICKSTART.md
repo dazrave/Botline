@@ -20,6 +20,22 @@ npm install
 
 ## Step 2: Configure Environment
 
+### Option A: Interactive Setup (Recommended)
+
+Run the interactive setup wizard:
+
+```bash
+npm run setup
+```
+
+This will guide you through all configuration options including:
+- Server settings
+- Security configuration
+- Platform credentials (Slack/Telegram)
+- AI agent API keys
+
+### Option B: Manual Configuration
+
 Copy the example environment file:
 
 ```bash
@@ -78,6 +94,49 @@ npm start
 2. Start a chat: `/start`
 3. Send any message: `hello!`
 
+### Test Chat Commands
+Try these commands in Slack or Telegram:
+- `/help` - Show available commands
+- `/status` - Show system status
+- `/agents` - List registered CLI agents
+
+## Step 5: (Optional) Set Up CLI Agent Communication
+
+To enable bidirectional communication with CLI-based agents:
+
+### 1. Start a CLI Bridge
+
+```bash
+cd bridges
+BOTLINE_URL=http://localhost:3000 \
+BRIDGE_PORT=4040 \
+node cli-bridge.js my-agent echo "Hello from CLI agent"
+```
+
+### 2. Register the Agent
+
+```bash
+curl -X POST http://localhost:3000/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-agent",
+    "callbackUrl": "http://127.0.0.1:4040/reply",
+    "description": "My CLI agent"
+  }'
+```
+
+### 3. Interact with the Agent
+
+In Slack or Telegram:
+```
+/agents          # See registered agents
+/status          # View agent status
+```
+
+The CLI agent can now send you messages, and you can reply back!
+
+For more details, see the [CLI Agent Communication Guide](CLI_AGENTS.md).
+
 ## Verification
 
 Check if Botline is running:
@@ -92,6 +151,11 @@ You should see:
   "platforms": ["slack"],  // or ["telegram"] or both
   "agents": ["claude"]     // or ["openrouter"] or both
 }
+```
+
+Check detailed status:
+```bash
+curl http://localhost:3000/status
 ```
 
 ## Troubleshooting
@@ -111,6 +175,12 @@ You should see:
 - Verify your bot token is correct
 - Make sure you've started a conversation with the bot (send `/start`)
 
+### CLI Bridge Issues
+- Ensure the bridge is running on the correct port
+- Verify the agent is registered (`curl http://localhost:3000/agents`)
+- Check bridge logs for errors
+- Ensure firewall allows localhost connections
+
 ### Enable Debug Logging
 Add to your `.env`:
 ```env
@@ -120,5 +190,8 @@ LOG_LEVEL=debug
 ## Next Steps
 
 - Read the full [README.md](README.md) for detailed configuration options
+- Learn about [CLI Agent Communication](CLI_AGENTS.md)
+- Explore the [Architecture Documentation](ARCHITECTURE.md)
+- Check out example configurations in [examples/](examples/)
 - Explore different AI models via OpenRouter
 - Customize the bot's behavior by modifying the adapters
