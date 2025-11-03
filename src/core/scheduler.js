@@ -1,6 +1,9 @@
 import logger from './logger.js';
 import config from '../config/index.js';
 
+// Keepalive message sent to Claude to maintain credit replenishment cycle
+export const KEEPALIVE_MESSAGE = 'hello world (keepalive)';
+
 /**
  * CreditTimerKeeper - Maintains Claude's credit replenishment cycle
  * by sending periodic heartbeat messages
@@ -142,9 +145,12 @@ class CreditTimerKeeper {
     this.nextHeartbeat = new Date(Date.now() + this.interval);
     
     this.timer = setTimeout(async () => {
-      await this.sendHeartbeat();
-      // Schedule next one
-      this.scheduleNextHeartbeat();
+      try {
+        await this.sendHeartbeat();
+      } finally {
+        // Always schedule next heartbeat, even if current one failed
+        this.scheduleNextHeartbeat();
+      }
     }, this.interval);
 
     logger.debug(`Next heartbeat scheduled for: ${this.nextHeartbeat.toISOString()}`);
@@ -163,7 +169,7 @@ class CreditTimerKeeper {
     try {
       logger.info('Credit Timer Keeper: Sending heartbeat to Claude');
       
-      await this.sendMessageCallback('hello world (keepalive)');
+      await this.sendMessageCallback(KEEPALIVE_MESSAGE);
       
       const responseTime = Date.now() - startTime;
       logger.info(`Credit Timer Keeper: Heartbeat successful (${responseTime}ms)`);

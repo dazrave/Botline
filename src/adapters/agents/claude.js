@@ -1,7 +1,7 @@
 import axios from 'axios';
 import logger from '../../core/logger.js';
 import config from '../../config/index.js';
-import creditTimerKeeper from '../../core/scheduler.js';
+import creditTimerKeeper, { KEEPALIVE_MESSAGE } from '../../core/scheduler.js';
 
 /**
  * Claude AI Agent Adapter
@@ -25,7 +25,7 @@ class ClaudeAdapter {
       }
 
       // Check if this is a keepalive message
-      const isKeepalive = message.includes('(keepalive)');
+      const isKeepalive = message === KEEPALIVE_MESSAGE;
 
       if (!isKeepalive) {
         // Pause timer keeper when real message is sent
