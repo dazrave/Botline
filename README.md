@@ -98,15 +98,95 @@ Create a `.env` file based on `.env.example`:
 
 ### Setting up Slack
 
-1. Create a Slack App at [api.slack.com/apps](https://api.slack.com/apps)
-2. Enable Socket Mode and get an App Token
-3. Add Bot Token Scopes:
-   - `app_mentions:read`
-   - `chat:write`
-   - `im:history`
-   - `im:read`
-4. Install the app to your workspace
-5. Copy the Bot Token and App Token to your `.env` file
+Follow these steps to configure your Slack app for Socket Mode communication with Botline:
+
+#### 1. Create a Slack App
+
+1. Go to [api.slack.com/apps](https://api.slack.com/apps)
+2. Click **"Create New App"**
+3. Choose **"From scratch"**
+4. Give your app a name (e.g., "Botline") and select your workspace
+5. Click **"Create App"**
+
+#### 2. Enable Socket Mode
+
+1. In your app settings, go to **"Socket Mode"** in the left sidebar
+2. Toggle **"Enable Socket Mode"** to **On**
+3. You'll be prompted to create an App-Level Token:
+   - Give it a name (e.g., "Botline Socket Token")
+   - Add the **`connections:write`** scope
+   - Click **"Generate"**
+4. **Copy the App-Level Token** (starts with `xapp-`) - you'll need this for your `.env` file
+5. Click **"Done"**
+
+#### 3. Configure Event Subscriptions
+
+1. Go to **"Event Subscriptions"** in the left sidebar
+2. Toggle **"Enable Events"** to **On**
+3. Under **"Subscribe to bot events"**, click **"Add Bot User Event"** and add these events:
+   - `app_mention` - When someone mentions your bot
+   - `message.im` - Direct messages to the bot
+   - `message.channels` - Messages in channels (if bot is added to channel)
+   - `message.groups` - Messages in private channels
+   - `message.mpim` - Messages in group DMs
+4. Click **"Save Changes"** (important!)
+
+#### 4. Configure OAuth Scopes
+
+1. Go to **"OAuth & Permissions"** in the left sidebar
+2. Scroll down to **"Scopes"** → **"Bot Token Scopes"**
+3. Click **"Add an OAuth Scope"** and add these scopes:
+   - `app_mentions:read` - Read messages that mention your bot
+   - `chat:write` - Send messages as the bot
+   - `im:read` - View basic info about direct messages
+   - `im:history` - View messages in direct messages
+   - `channels:history` - View messages in public channels
+   - `groups:history` - View messages in private channels
+   - `mpim:history` - View messages in group DMs
+
+#### 5. Enable App Home Messages
+
+1. Go to **"App Home"** in the left sidebar
+2. Scroll down to **"Show Tabs"**
+3. Check the box for **"Messages Tab"**
+4. Enable **"Allow users to send Slash commands and messages from the messages tab"**
+
+#### 6. Install the App to Your Workspace
+
+1. Go to **"Install App"** in the left sidebar (or scroll up on the "OAuth & Permissions" page)
+2. Click **"Install to Workspace"** (or **"Reinstall to Workspace"** if you've made changes)
+3. Review the permissions and click **"Allow"**
+4. **Copy the Bot User OAuth Token** (starts with `xoxb-`) - you'll need this for your `.env` file
+
+#### 7. Update Your Environment Variables
+
+Add the tokens to your `.env` file:
+```bash
+SLACK_BOT_TOKEN=xoxb-your-bot-token-here
+SLACK_APP_TOKEN=xapp-your-app-token-here
+SLACK_SIGNING_SECRET=your-signing-secret-here
+```
+
+You can find your **Signing Secret** under **"Basic Information"** → **"App Credentials"**.
+
+#### 8. Verify the Configuration
+
+1. Start Botline: `npm run dev`
+2. In Slack, send a direct message to your bot or mention it in a channel
+3. To verify events are being received, go to **"Event Subscriptions"** in your Slack app settings
+4. Scroll down to **"Event Logs"** to see incoming events in real-time
+
+#### Important Notes
+
+- **Save Changes**: Always click **"Save Changes"** after modifying Event Subscriptions
+- **Reinstall Required**: After adding or changing OAuth scopes or event subscriptions, you must **reinstall the app** for changes to take effect
+- **New Bot Token**: Reinstalling may generate a new `xoxb-` Bot Token. If messages stop working after reinstalling, check if your Bot Token changed and update your `.env` file accordingly
+- **Troubleshooting**: If the bot connects but doesn't respond to messages:
+  - Verify all required event subscriptions are added
+  - Check that OAuth scopes are correctly configured
+  - Confirm the Messages Tab is enabled in App Home
+  - Review Event Logs to see if events are being received
+  - Ensure you've reinstalled the app after making changes
 
 ### Setting up Telegram
 
