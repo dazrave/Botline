@@ -57,6 +57,12 @@ class SlackAdapter {
       await ack();
 
       try {
+        // Skip events that don't have an event object (e.g., hello, goodbye, system events)
+        if (!event) {
+          logger.debug('Received Slack event without event object (likely system event)');
+          return;
+        }
+
         // Handle app_mention events
         if (event.type === 'app_mention') {
           await this.handleMention(event);
