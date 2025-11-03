@@ -41,8 +41,8 @@ export const config = {
   },
   creditKeeper: {
     enabled: process.env.CREDIT_KEEPER_ENABLED === 'true',
-    interval: parseInt(process.env.CREDIT_KEEPER_INTERVAL || '60', 10),
-    cooldown: parseInt(process.env.CREDIT_KEEPER_COOLDOWN || '120', 10),
+    interval: parseFloat(process.env.CREDIT_KEEPER_INTERVAL || '60'),
+    cooldown: parseFloat(process.env.CREDIT_KEEPER_COOLDOWN || '120'),
   },
 };
 
